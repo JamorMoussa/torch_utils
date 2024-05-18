@@ -91,11 +91,11 @@ class Trainer:
 
             loss = self.loss_fn(y_pred, y)
 
-            self.opt_container.opt.zero_grad()
+            self.opt_container.zero_grad()
 
             loss.backward()
 
-            self.opt_container.opt.step()
+            self.opt_container.step()
 
     def train(self):
 
