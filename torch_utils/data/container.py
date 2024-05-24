@@ -15,7 +15,7 @@ class DataContainerConfigs(ConfigsBase):
     test_batch: int 
     shuffle: bool 
 
-    types: tuple[type] = field(default= (int, int, bool))
+    types: tuple[type] = field(default= (int, int, bool), repr=False)
 
     @staticmethod
     def get_defaults() -> Self:
