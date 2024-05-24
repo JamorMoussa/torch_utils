@@ -1,18 +1,21 @@
 from torch.utils.data import Dataset, DataLoader
 
-from dataclasses import dataclass
+from ..base import ConfigsBase
 
+from dataclasses import dataclass, field
 from typing import Self
 
 
 __all__ = ["DataContainer", "DataContainerConfigs"]
 
 @dataclass
-class DataContainerConfigs:
+class DataContainerConfigs(ConfigsBase):
 
     train_batch: int 
     test_batch: int 
     shuffle: bool 
+
+    types: tuple[type] = field(default= (int, int, bool))
 
     @staticmethod
     def get_defaults() -> Self:
