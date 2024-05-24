@@ -18,4 +18,4 @@ class ConfigsBase:
 
         super().__setattr__(name, value)
         for index, attr in enumerate(self.__dict__):
-            if attr != "types": insure_type(self.__dict__[attr], Type= self.types[index])
+            if attr != "types": insure_type(varname= attr, value=self.__dict__[attr], Type= self.types[index])
