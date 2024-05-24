@@ -24,7 +24,7 @@ class TrainerConfigs(ConfigsBase):
 
     device: torch.device = torch.device("cpu")
 
-    types: tuple[type] = field(default=(int, int, int, bool, torch.device))
+    types: tuple[type] = field(default=(int, int, int, bool, torch.device), repr=False)
 
     @staticmethod
     def get_defaults() -> Self:
