@@ -3,9 +3,10 @@ from torch.utils.data import DataLoader
 
 from .. import optim as ts_optim
 from .. import data as ts_data
+from ..base import ConfigsBase
 
-from dataclasses import dataclass
-from typing import Self
+from dataclasses import dataclass, field
+from typing import Self, Any
 
 from tqdm import tqdm
 
@@ -14,7 +15,7 @@ __all__ = ["Trainer", "TrainerConfigs", ]
 
 
 @dataclass
-class TrainerConfigs:
+class TrainerConfigs(ConfigsBase):
 
     max_iters: int = 10
     train_batch: int = 64
@@ -22,6 +23,8 @@ class TrainerConfigs:
     shuffle_data: bool = True
 
     device: torch.device = torch.device("cpu")
+
+    types: tuple[type] = field(default=(int, int, int, bool, torch.device))
 
     @staticmethod
     def get_defaults() -> Self:
