@@ -42,8 +42,6 @@ class Trainer:
     test_loader: DataLoader
 
     configs: TrainerConfigs
-
-    device: torch.device
     
     def __init__(
         self,
@@ -59,7 +57,7 @@ class Trainer:
             data_container: ts_data.DataContainer
     ) -> None:
         
-        self.model = model
+        self.model = model.to(self.configs.device)
         self.loss_fn = loss_fn
         self.opt_container = opt_container
         self.data_container = data_container
