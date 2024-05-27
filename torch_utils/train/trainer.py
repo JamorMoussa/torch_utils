@@ -8,9 +8,7 @@ from .classification import ClassificationTrainer
 from .regression import RegressionTrainer
 
 from dataclasses import dataclass, field
-from typing import Self, Any
-
-from tqdm import tqdm
+from typing import Self
 
 
 __all__ = ["Trainer", "TrainerConfigs", ]
@@ -30,7 +28,11 @@ class TrainerConfigs(ConfigsBase):
 
     @staticmethod
     def get_defaults() -> Self:
-        return TrainerConfigs()
+        return TrainerConfigs(**TrainerConfigs._defaults())
+    
+    @staticmethod
+    def _defaults():
+        return {"max_iters": 10, "train_batch":64, "test_batch": 64, "shuffle_data": True, "device": torch.device("cpu"),}
 
 
 class Trainer(TrainerBase):
@@ -47,13 +49,26 @@ class Trainer(TrainerBase):
 
     is_classification: bool = True
 
-    sub_trainer: TrainerBase = None
+    __trainer: TrainerBase = None
     
     def __init__(
         self,
         configs: TrainerConfigs = TrainerConfigs.get_defaults()
     ) -> None:    
         self.configs = configs
+
+
+    @property
+    def classification(self):
+        if not self._check_cls_mode(loss_fn= self.loss_fn):
+            raise ValueError("you're working with regression task.")
+        return self.__trainer
+
+    @property
+    def regression(self):
+        if self._check_cls_mode(loss_fn= self.loss_fn):
+            raise ValueError("you're working with classification task.")
+        return self.__trainer
 
     def compile(
             self,
@@ -89,30 +104,31 @@ class Trainer(TrainerBase):
                 )
         
         if self.is_classification: 
-            self.sub_trainer = ClassificationTrainer()
+            self.__trainer = ClassificationTrainer()
         else:
-            self.sub_trainer = RegressionTrainer()
+            self.__trainer = RegressionTrainer()
 
         
-        self.sub_trainer.compile(
+        self.__trainer.compile(
             model= model, 
             loss_fn= loss_fn,
             opt_container= opt_container,
             train_loader= self.train_loader,
             test_loader= self.test_loader,
-            device= self.configs.device
+            device= self.configs.device,
+            batch= self.configs.train_batch
         )
         
     def train_step(self):
-        self.sub_trainer.train_step()
+        self.__trainer.train_step()
 
     def test_step(self):
-        self.sub_trainer.test_step()
+        self.__trainer.test_step()
         
-    
     def train(self):
 
-        for iter in (bar := tqdm(range(self.configs.max_iters))):
+        for iter in range(self.configs.max_iters):
+            print(f"Epoch {iter + 1}/{self.configs.max_iters}")
             
             self.train_step()
 
