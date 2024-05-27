@@ -14,13 +14,15 @@ from torch.utils.data import TensorDataset, random_split
 import torch_utils as ts
 ```
 
+For this example, we're going to generate a simple data.
+
 ```python 
 X = torch.rand(100, 3)
 y = torch.mm(X, torch.Tensor([1, 2, 3]).unsqueeze(0).t())
 
 dataset = TensorDataset(X, y)
 ```
-Let build a simple model 
+Let build a simple model, just a single `Linear` layer.
 
 ```python
 model = nn.Sequential(
@@ -42,7 +44,7 @@ Trainer(
 )
 ```
 
-Let's change some configurations, like `max_ietrs` 
+Let's change some configurations. For example, change the `max_ietrs` to be 100. 
 
 ```python
 trainer.configs.max_iters = 100
@@ -64,7 +66,7 @@ aloso the trainer takes the `OptimizerContainer` rather than the torch `Optimize
 opt = ts.optim.OptimizerContainer(optim.Adam(model.parameters(), lr=0.01))
 ```
 
-Now, let's compile the trainer 
+Now, let's compile the trainer. Provide all building blocks needed to train the model, such as optimizer, loss functio, datasets.
 
 ```python
 trainer.compile(
