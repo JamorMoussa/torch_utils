@@ -14,7 +14,7 @@ from torch.utils.data import TensorDataset, random_split
 import torch_utils as ts
 ```
 
-For this example, we're going to generate a simple data.
+For this example, we're going to use a simple data. which is generated randomly.
 
 ```python 
 X = torch.rand(100, 3)
@@ -34,8 +34,6 @@ Now, let create an instance of our `Trainer` class. The `Trainer` will charge of
 
 ```python
 trainer = ts.train.Trainer()
-
-trainer
 ```
 
 ```
