@@ -1,7 +1,7 @@
 from .exceptions import insure_type, MissingAttrError
 
 from typing import Any
-
+from abc import ABC, abstractmethod
 
 __all__ = ["ConfigsBase", ]
 
@@ -19,3 +19,18 @@ class ConfigsBase:
         super().__setattr__(name, value)
         for index, attr in enumerate(self.__dict__):
             if attr != "types": insure_type(varname= attr, value=self.__dict__[attr], Type= self.types[index])
+
+
+class TrainerBase(ABC):
+
+    @abstractmethod
+    def compile(self, *args, **kwargs):
+        ... 
+
+    @abstractmethod
+    def train_step(self, ):
+        ...
+
+    @abstractmethod
+    def test_step(self, ):
+        ...

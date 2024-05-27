@@ -3,7 +3,9 @@ from torch.utils.data import DataLoader
 
 from .. import optim as ts_optim
 from .. import data as ts_data
-from ..base import ConfigsBase
+from ..base import ConfigsBase, TrainerBase
+from .classification import ClassificationTrainer
+from .regression import RegressionTrainer
 
 from dataclasses import dataclass, field
 from typing import Self, Any
@@ -31,7 +33,7 @@ class TrainerConfigs(ConfigsBase):
         return TrainerConfigs()
 
 
-class Trainer:
+class Trainer(TrainerBase):
 
     model: nn.Module
     loss_fn: nn.modules.loss._Loss
@@ -42,6 +44,10 @@ class Trainer:
     test_loader: DataLoader
 
     configs: TrainerConfigs
+
+    is_classification: bool = True
+
+    sub_trainer: TrainerBase = None
     
     def __init__(
         self,
@@ -62,6 +68,8 @@ class Trainer:
         self.opt_container = opt_container
         self.data_container = data_container
 
+        self.is_classification = self._check_cls_mode(loss_fn= loss_fn)
+
         data_configs = ts_data.DataContainerConfigs(
                             train_batch= self.configs.train_batch,
                             test_batch= self.configs.test_batch,
@@ -80,31 +88,45 @@ class Trainer:
                     self.data_container.configs.test_batch
                 )
         
-    def train_step(self):
+        if self.is_classification: 
+            self.sub_trainer = ClassificationTrainer()
+        else:
+            self.sub_trainer = RegressionTrainer()
+
         
-        self.model.train()
+        self.sub_trainer.compile(
+            model= model, 
+            loss_fn= loss_fn,
+            opt_container= opt_container,
+            train_loader= self.train_loader,
+            test_loader= self.test_loader,
+            device= self.configs.device
+        )
+        
+    def train_step(self):
+        self.sub_trainer.train_step()
 
-        for batch, (X, y) in enumerate(self.train_loader):
-
-            X, y = X.to(self.configs.device), y.to(self.configs.device)
-
-            y_pred = self.model(X)
-
-            loss = self.loss_fn(y_pred, y)
-
-            self.opt_container.zero_grad()
-
-            loss.backward()
-
-            self.opt_container.step()
-
+    def test_step(self):
+        self.sub_trainer.test_step()
+        
+    
     def train(self):
 
         for iter in (bar := tqdm(range(self.configs.max_iters))):
+            
             self.train_step()
-           # bar.set_description(f"Hello {iter}")
 
+            self.test_step()
 
     def __repr__(self) -> str:
         return f"Trainer(\n{' '*2}(configs): {self.configs}\n)"
+    
+
+    def _check_cls_mode(
+        self,
+        loss_fn: nn.modules.loss._Loss,
+    ):
+        cls_loss_fns = (nn.CrossEntropyLoss, nn.BCELoss)
+
+        return True if any(isinstance(loss_fn, loss) for loss in cls_loss_fns) else False
 
